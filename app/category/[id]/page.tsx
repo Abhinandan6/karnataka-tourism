@@ -117,12 +117,12 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
             description: "Twin waterfalls formed by the Kaveri River, with a hydroelectric power station",
             image: "/placeholder.svg?height=300&width=500",
           },
-          {
-            name: "Hebbe Falls",
-            slug: "hebbe-falls",
-            description: "Majestic waterfall in Chikmagalur district, requiring a trek through coffee estates",
-            image: "/placeholder.svg?height=300&width=500",
-          },
+          // {
+          //   name: "Hebbe Falls",
+          //   slug: "hebbe-falls",
+          //   description: "Majestic waterfall in Chikmagalur district, requiring a trek through coffee estates",
+          //   image: "/placeholder.svg?height=300&width=500",
+          // },
         ],
       },
       forts: {
@@ -273,42 +273,42 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
           },
         ],
       },
-      clothes: {
-        title: "Traditional Clothes of Karnataka",
-        description: "Karnataka's traditional attire reflects the state's rich cultural heritage and craftsmanship.",
-        items: [
-          {
-            name: "Ilkal Saree",
-            slug: "ilkal-saree",
-            description: "Traditional saree with distinctive red border and geometric patterns",
-            image: "/placeholder.svg?height=300&width=500",
-          },
-          {
-            name: "Mysore Silk",
-            slug: "mysore-silk",
-            description: "Luxurious silk sarees known for their gold zari work",
-            image: "/placeholder.svg?height=300&width=500",
-          },
-          {
-            name: "Khun Fabric",
-            slug: "khun-fabric",
-            description: "Handloom fabric traditionally used for blouses and now for contemporary clothing",
-            image: "/placeholder.svg?height=300&width=500",
-          },
-          {
-            name: "Kasuti Embroidery",
-            slug: "kasuti-embroidery",
-            description: "Intricate handwork embroidery traditional to North Karnataka",
-            image: "/placeholder.svg?height=300&width=500",
-          },
-          {
-            name: "Lambani Crafts",
-            slug: "lambani-crafts",
-            description: "Colorful mirror and thread embroidery by the Lambani tribe",
-            image: "/placeholder.svg?height=300&width=500",
-          },
-        ],
-      },
+      // clothes: {
+      //   title: "Traditional Clothes of Karnataka",
+      //   description: "Karnataka's traditional attire reflects the state's rich cultural heritage and craftsmanship.",
+      //   items: [
+      //     {
+      //       name: "Ilkal Saree",
+      //       slug: "ilkal-saree",
+      //       description: "Traditional saree with distinctive red border and geometric patterns",
+      //       image: "/placeholder.svg?height=300&width=500",
+      //     },
+      //     {
+      //       name: "Mysore Silk",
+      //       slug: "mysore-silk",
+      //       description: "Luxurious silk sarees known for their gold zari work",
+      //       image: "/placeholder.svg?height=300&width=500",
+      //     },
+      //     {
+      //       name: "Khun Fabric",
+      //       slug: "khun-fabric",
+      //       description: "Handloom fabric traditionally used for blouses and now for contemporary clothing",
+      //       image: "/placeholder.svg?height=300&width=500",
+      //     },
+      //     {
+      //       name: "Kasuti Embroidery",
+      //       slug: "kasuti-embroidery",
+      //       description: "Intricate handwork embroidery traditional to North Karnataka",
+      //       image: "/placeholder.svg?height=300&width=500",
+      //     },
+      //     {
+      //       name: "Lambani Crafts",
+      //       slug: "lambani-crafts",
+      //       description: "Colorful mirror and thread embroidery by the Lambani tribe",
+      //       image: "/placeholder.svg?height=300&width=500",
+      //     },
+      //   ],
+      // },
     }
 
     return (
