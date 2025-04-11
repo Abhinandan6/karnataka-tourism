@@ -386,11 +386,6 @@ export default function Home() {
                 Plan Your Trip
               </button>
             </Link>
-                <Link href="http://localhost:5173/">
-              <button className="px-6 py-3 bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-800 hover:to-amber-700 text-white rounded-full font-josefin shadow-lg transition-all hover:scale-105">
-                Map Locator
-              </button>
-            </Link>
 
             <button
               onClick={() => setShowArModal(true)}
