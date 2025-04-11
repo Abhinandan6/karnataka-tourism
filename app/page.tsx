@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { QrCode, Smartphone } from "lucide-react"
@@ -19,6 +22,165 @@ export default function Home() {
   const exploreRef = useRef(null)
   const cardsRef = useRef(null)
   const [showArModal, setShowArModal] = useState(false)
+  
+  // Add these state variables for the Temple AI section
+  const [image, setImage] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [result, setResult] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Temple AI Feature Section Component
+  const TempleFeaturedSection = () => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        const selectedImage = e.target.files[0]
+        setImage(selectedImage)
+        setPreview(URL.createObjectURL(selectedImage))
+        setResult(null)
+        setError(null)
+      }
+    }
+
+    const handleSubmit = async () => {
+      if (!image) {
+        setError('Please select an image first')
+        return
+      }
+
+      setLoading(true)
+      setError(null)
+
+      try {
+        const formData = new FormData()
+        formData.append('image', image)
+        formData.append('usePredefined', 'true')
+        
+        const response = await fetch('/api/temple-info', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to process image')
+        }
+
+        const data = await response.json()
+        setResult(data)
+      } catch (err) {
+        console.error('Error details:', err)
+        setError('Error processing image. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    return (
+      <section className="py-16 bg-amber-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-amber-800 font-josefin mb-4">Identify Temple Architecture</h2>
+            <p className="text-amber-700 max-w-2xl mx-auto">
+              Upload a photo of any Karnataka temple and our AI will identify its dynasty, era, and architectural style.
+            </p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto">
+            <Card className="border-amber-200 shadow-lg">
+              <CardHeader className="bg-amber-100 border-b border-amber-200">
+                <CardTitle className="text-amber-800 font-josefin text-xl">Temple AI Analysis</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex-1">
+                      <div className="mb-4">
+                        <Input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleImageChange} 
+                          className="cursor-pointer"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Upload a temple image to get AI-generated information
+                        </p>
+                      </div>
+                      
+                      <Button 
+                        onClick={handleSubmit} 
+                        disabled={!image || loading}
+                        className="w-full bg-amber-600 hover:bg-amber-700 mt-4"
+                      >
+                        {loading ? 'Analyzing...' : 'Analyze Temple Image'}
+                      </Button>
+                      
+                      {error && (
+                        <p className="text-red-500 text-sm mt-2">{error}</p>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1">
+                      {preview ? (
+                        <div className="border border-amber-200 rounded-md overflow-hidden h-48 flex items-center justify-center">
+                          <img 
+                            src={preview} 
+                            alt="Preview" 
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="border border-dashed border-amber-200 rounded-md h-48 flex items-center justify-center bg-amber-50">
+                          <p className="text-amber-400 text-center px-4">
+                            Temple image preview will appear here
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {result && (
+                    <div className="mt-6 space-y-4">
+                      <Separator className="bg-amber-200" />
+                      <div>
+                        <h3 className="font-medium text-amber-800">Description:</h3>
+                        <p className="text-gray-700">{result.caption}</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-medium text-amber-800">Dynasty:</h3>
+                          <p className="text-gray-700">{result.dynasty}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-amber-800">Era:</h3>
+                          <p className="text-gray-700">{result.era}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-amber-800">Location:</h3>
+                          <p className="text-gray-700">{result.location}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-amber-800">Style:</h3>
+                          <p className="text-gray-700">{result.style}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="text-center mt-4">
+                    <Link href="/temple-classifier" className="text-amber-600 hover:text-amber-800 text-sm">
+                      Try our full Temple Classifier tool →
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   // Categories data
   const categories = [
@@ -284,6 +446,239 @@ export default function Home() {
                 </Link>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Remove this line - it's causing the duplicate */}
+      {/* <TempleFeaturedSection /> */}
+
+      {/* Keep only this improved Temple AI Feature Section */}
+      <section className="py-20 bg-gradient-to-r from-amber-50 to-amber-100 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-amber-200/30 to-transparent"></div>
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-300/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-300/20 rounded-full blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-amber-800 font-josefin mb-4">Discover Temple Architecture</h2>
+            <p className="text-amber-700 max-w-2xl mx-auto text-lg">
+              Upload a photo of any Karnataka temple and our AI will identify its dynasty, era, and architectural style.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-amber-200 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+              <CardHeader className="bg-gradient-to-r from-amber-100 to-amber-50 border-b border-amber-200 py-6">
+                <CardTitle className="text-amber-800 font-josefin text-2xl flex items-center">
+                  <span className="bg-amber-600 text-white p-2 rounded-full mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                      <path d="M2 17l10 5 10-5"></path>
+                      <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                  </span>
+                  Temple AI Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="space-y-8">
+                  <div className="flex flex-col md:flex-row gap-8">
+                    <div className="flex-1 space-y-4">
+                      <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                        <h3 className="font-medium text-amber-800 mb-2 flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="9" y1="15" x2="15" y2="15"></line>
+                          </svg>
+                          Upload Temple Image
+                        </h3>
+                        <Input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const selectedImage = e.target.files[0];
+                              setImage(selectedImage);
+                              setPreview(URL.createObjectURL(selectedImage));
+                              setResult(null);
+                              setError(null);
+                            }
+                          }} 
+                          className="cursor-pointer bg-white border-amber-300 focus:ring-amber-500"
+                        />
+                        <p className="text-xs text-amber-700/70 mt-2">
+                          Supported formats: JPG, PNG, WEBP (Max: 5MB)
+                        </p>
+                      </div>
+                      
+                      <Button 
+                        onClick={async () => {
+                          if (!image) {
+                            setError('Please select an image first');
+                            return;
+                          }
+                          
+                          setLoading(true);
+                          setError(null);
+                          
+                          try {
+                            const formData = new FormData();
+                            formData.append('image', image);
+                            formData.append('usePredefined', 'true');
+                            
+                            const response = await fetch('/api/temple-info', {
+                              method: 'POST',
+                              body: formData,
+                            });
+                            
+                            if (!response.ok) {
+                              const errorData = await response.json();
+                              throw new Error(errorData.error || 'Failed to process image');
+                            }
+                            
+                            const data = await response.json();
+                            setResult(data);
+                          } catch (err) {
+                            console.error('Error details:', err);
+                            setError('Error processing image. Please try again.');
+                          } finally {
+                            setLoading(false);
+                          }
+                        }} 
+                        disabled={!image || loading}
+                        className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white py-6 rounded-md font-medium text-lg shadow-md transition-all duration-300 hover:shadow-lg"
+                      >
+                        {loading ? (
+                          <span className="flex items-center justify-center">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Analyzing Temple...
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="12" y1="8" x2="12" y2="16"></line>
+                              <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                            Analyze Temple Architecture
+                          </span>
+                        )}
+                      </Button>
+                      
+                      {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                          {error}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1">
+                      {preview ? (
+                        <div className="border border-amber-200 rounded-lg overflow-hidden h-64 flex items-center justify-center bg-white shadow-inner">
+                          <img 
+                            src={preview} 
+                            alt="Temple Preview" 
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="border-2 border-dashed border-amber-200 rounded-lg h-64 flex flex-col items-center justify-center bg-amber-50/50 text-center px-6">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-amber-300 mb-3">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                          </svg>
+                          <p className="text-amber-600 font-medium">
+                            Temple image preview will appear here
+                          </p>
+                          <p className="text-amber-500/70 text-sm mt-2">
+                            Upload a clear image of a temple for best results
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {result && (
+                    <div className="mt-8 space-y-6 bg-amber-50/70 p-6 rounded-lg border border-amber-200">
+                      <div className="text-center mb-4">
+                        <h3 className="text-xl font-bold text-amber-800 font-josefin">Analysis Results</h3>
+                        <Separator className="bg-amber-200 mt-2" />
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-md shadow-sm border border-amber-100">
+                        <h3 className="font-medium text-amber-800 mb-2 flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                          </svg>
+                          Description:
+                        </h3>
+                        <p className="text-gray-700">{result.caption}</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white p-4 rounded-md shadow-sm border border-amber-100">
+                          <h3 className="font-medium text-amber-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                              <path d="M12 20h9"></path>
+                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                            Dynasty:
+                          </h3>
+                          <p className="text-gray-700 font-medium">{result.dynasty}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-md shadow-sm border border-amber-100">
+                          <h3 className="font-medium text-amber-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Era:
+                          </h3>
+                          <p className="text-gray-700 font-medium">{result.era}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-md shadow-sm border border-amber-100">
+                          <h3 className="font-medium text-amber-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                              <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            Location:
+                          </h3>
+                          <p className="text-gray-700 font-medium">{result.location}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-md shadow-sm border border-amber-100">
+                          <h3 className="font-medium text-amber-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            Style:
+                          </h3>
+                          <p className="text-gray-700 font-medium">{result.style}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="text-center mt-6">
+                    <Link href="/temple-classifier" className="inline-flex items-center text-amber-600 hover:text-amber-800 font-medium transition-colors">
+                      Try our full Temple Classifier tool
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
